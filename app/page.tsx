@@ -129,10 +129,32 @@ export default function HomePage() {
     setLog(["Permainan direset. Semangat bertualang!"]);
   };
 
+  const heroMood = playerHp <= 0 ? "down" : enemy ? "combat" : "idle";
+
   return (
     <main className="container">
       <h1>⚔️ RPG Nusantara Interaktif</h1>
       <p className="subtitle">Jelajahi hutan, lawan monster, dan naik level!</p>
+
+      <section className="character-stage">
+        <div className="stage-header">
+          <h2>Model Karakter 3D</h2>
+          <p>{enemy ? `Siap melawan ${enemy.name}` : "Mode santai di perkemahan"}</p>
+        </div>
+
+        <div className="scene">
+          <div className={`character ${heroMood}`}>
+            <div className="head" />
+            <div className="torso" />
+            <div className="arm left" />
+            <div className="arm right" />
+            <div className="leg left" />
+            <div className="leg right" />
+            <div className="sword" />
+            <div className="shadow" />
+          </div>
+        </div>
+      </section>
 
       <section className="stats">
         <div>HP: {playerHp}/{maxPlayerHp}</div>
