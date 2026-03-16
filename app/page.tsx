@@ -9,6 +9,8 @@ type Enemy = {
   exp: number;
 };
 
+type Effect = "none" | "explore" | "attack" | "potion" | "victory" | "defeat";
+
 const enemies: Enemy[] = [
   { name: "Slime Rawa", hp: 20, attack: 4, exp: 8 },
   { name: "Serigala Senja", hp: 30, attack: 6, exp: 12 },
@@ -27,11 +29,19 @@ export default function HomePage() {
   const [enemyHp, setEnemyHp] = useState(0);
   const [log, setLog] = useState<string[]>(["Selamat datang, petualang!"]);
   const [potions, setPotions] = useState(3);
+  const [effect, setEffect] = useState<Effect>("none");
 
   const expToLevel = useMemo(() => level * 20, [level]);
 
   const addLog = (message: string) => {
     setLog((prev) => [message, ...prev].slice(0, 8));
+  };
+
+  const triggerEffect = (nextEffect: Effect, duration = 750) => {
+    setEffect(nextEffect);
+    window.setTimeout(() => {
+      setEffect((current) => (current === nextEffect ? "none" : current));
+    }, duration);
   };
 
   const explore = () => {
@@ -48,6 +58,7 @@ export default function HomePage() {
     const foundEnemy = enemies[Math.floor(Math.random() * enemies.length)];
     setEnemy(foundEnemy);
     setEnemyHp(foundEnemy.hp);
+    triggerEffect("explore", 900);
     addLog(`Kamu bertemu ${foundEnemy.name}!`);
   };
 
@@ -56,6 +67,8 @@ export default function HomePage() {
       addLog("Tidak ada target untuk diserang.");
       return;
     }
+
+    triggerEffect("attack", 650);
 
     const damage = Math.floor(Math.random() * 6) + playerAttack - 2;
     const newEnemyHp = Math.max(enemyHp - damage, 0);
@@ -68,6 +81,7 @@ export default function HomePage() {
       setGold((g) => g + gainedGold);
       setExp(newExp);
       setEnemy(null);
+      triggerEffect("victory", 1100);
       addLog(`Kamu mengalahkan ${enemy.name} dan mendapatkan ${gainedGold} emas!`);
 
       if (newExp >= expToLevel) {
@@ -86,6 +100,7 @@ export default function HomePage() {
     addLog(`${enemy.name} menyerang balik sebesar ${enemyDamage} damage.`);
 
     if (newPlayerHp <= 0) {
+      triggerEffect("defeat", 1300);
       addLog("Kamu kalah! Gunakan ramuan atau reset permainan.");
     }
   };
@@ -103,6 +118,7 @@ export default function HomePage() {
 
     setPotions((p) => p - 1);
     setPlayerHp((hp) => Math.min(hp + 20, maxPlayerHp));
+    triggerEffect("potion", 900);
     addLog("Kamu meminum ramuan dan memulihkan 20 HP.");
   };
 
@@ -126,6 +142,7 @@ export default function HomePage() {
     setEnemy(null);
     setEnemyHp(0);
     setPotions(3);
+    setEffect("none");
     setLog(["Permainan direset. Semangat bertualang!"]);
   };
 
@@ -142,8 +159,8 @@ export default function HomePage() {
           <p>{enemy ? `Siap melawan ${enemy.name}` : "Mode santai di perkemahan"}</p>
         </div>
 
-        <div className="scene">
-          <div className={`character ${heroMood}`}>
+        <div className={`scene fx-${effect}`}>
+          <div className={`character ${heroMood} ${effect === "victory" ? "victory" : ""}`}>
             <div className="head" />
             <div className="torso" />
             <div className="arm left" />
@@ -153,6 +170,7 @@ export default function HomePage() {
             <div className="sword" />
             <div className="shadow" />
           </div>
+          <div className="effect-layer" aria-hidden="true" />
         </div>
       </section>
 
